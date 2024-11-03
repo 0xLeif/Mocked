@@ -5,7 +5,6 @@ import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
 import XCTest
 
-// Macro implementations build for the host, so the corresponding module is not available when cross-compiling. Cross-compiled tests may still make use of the macro itself in end-to-end tests.
 #if canImport(MockedMacros)
 import MockedMacros
 
@@ -14,9 +13,9 @@ let testMacros: [String: Macro.Type] = [
 ]
 #endif
 
-final class MockedTests: XCTestCase {
-    func testMacro() throws {
-        #if canImport(MockedMacros)
+final class MockedMacroTests: XCTestCase {
+    #if canImport(MockedMacros)
+    func testSimpleProtocolMocking() throws {
         assertMacroExpansion(
             """
             @Mocked
@@ -73,8 +72,8 @@ final class MockedTests: XCTestCase {
                 // MARK: - MockedSomeParameter init
 
                 init(
-                    title: String ,
-                    description: String ,
+                    title: String,
+                    description: String,
                     someMethod: (@Sendable () -> Void)? = nil,
                     someMethodParameter: (@Sendable (_ parameter: Int) -> Void)? = nil,
                     someMethodWith: (@Sendable (_ with: Int) -> Void)? = nil,
@@ -118,14 +117,14 @@ final class MockedTests: XCTestCase {
                 }
 
                 func someMethod(
-                    with: Int
+                    with parameter: Int
                 ) -> Void {
                     guard let someMethodOverrideWith else {
                         fatalError("Mocked someMethodWith: (@Sendable (_ with: Int) -> Void)? was not implemented!")
                     }
 
                     return someMethodOverrideWith(
-                        with
+                        parameter
                     )
                 }
 
@@ -164,8 +163,139 @@ final class MockedTests: XCTestCase {
             """,
             macros: testMacros
         )
-        #else
-        throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
     }
+
+    func testComplexProtocolMocking() throws {
+        assertMacroExpansion(
+            """
+            @Mocked
+            protocol ExampleProtocol: Sendable {
+                associatedtype ItemType
+
+                var name: String { get set }
+                var count: Int { get }
+                var isEnabled: Bool { get set }
+
+                func fetchItem(withID id: Int) async throws -> ItemType
+                func saveItem(_ item: ItemType) throws -> Bool
+
+                func processAllItems() async
+                func reset()
+                func optionalItem() -> ItemType?
+            }
+            """,
+            expandedSource: """
+            protocol ExampleProtocol: Sendable {
+                associatedtype ItemType
+
+                var name: String { get set }
+                var count: Int { get }
+                var isEnabled: Bool { get set }
+
+                func fetchItem(withID id: Int) async throws -> ItemType
+                func saveItem(_ item: ItemType) throws -> Bool
+
+                func processAllItems() async
+                func reset()
+                func optionalItem() -> ItemType?
+            }
+
+            /// Mocked version of ExampleProtocol
+            struct MockedExampleProtocol: ExampleProtocol {
+                // MARK: - MockedExampleProtocol Variables
+
+                var name: String
+                var count: Int
+                var isEnabled: Bool
+
+                // MARK: - MockedExampleProtocol Function Overrides
+
+                private let fetchItemOverrideAsyncThrowsWithid: (@Sendable (_ withID: Int) async throws -> ItemType)?
+                private let saveItemOverrideThrowsItem: (@Sendable (_ item: ItemType) throws -> Bool)?
+                private let processAllItemsOverrideAsync: (@Sendable () async -> Void)?
+                private let resetOverride: (@Sendable () -> Void)?
+                private let optionalItemOverride: (@Sendable () -> ItemType?)?
+
+                // MARK: - MockedExampleProtocol init
+
+                init(
+                    name: String,
+                    count: Int,
+                    isEnabled: Bool,
+                    fetchItemAsyncThrowsWithid: (@Sendable (_ withID: Int) async throws -> ItemType)? = nil,
+                    saveItemThrowsItem: (@Sendable (_ item: ItemType) throws -> Bool)? = nil,
+                    processAllItemsAsync: (@Sendable () async -> Void)? = nil,
+                    reset: (@Sendable () -> Void)? = nil,
+                    optionalItem: (@Sendable () -> ItemType?)? = nil
+                ) {
+                    self.name = name
+                    self.count = count
+                    self.isEnabled = isEnabled
+                    self.fetchItemOverrideAsyncThrowsWithid = fetchItemAsyncThrowsWithid
+                    self.saveItemOverrideThrowsItem = saveItemThrowsItem
+                    self.processAllItemsOverrideAsync = processAllItemsAsync
+                    self.resetOverride = reset
+                    self.optionalItemOverride = optionalItem
+                }
+
+
+                // MARK: - MockedExampleProtocol Functions
+
+                func fetchItem(
+                withID id: Int
+                ) async throws -> ItemType {
+                guard let fetchItemOverrideAsyncThrowsWithid else {
+                    fatalError("Mocked fetchItemAsyncThrowsWithid: (@Sendable (_ withID: Int) async throws -> ItemType)? was not implemented!")
+                }
+
+                return try await fetchItemOverrideAsyncThrowsWithid(
+                    id
+                )
+                }
+
+                func saveItem(
+                    _ item: ItemType
+                ) throws -> Bool {
+                    guard let saveItemOverrideThrowsItem else {
+                        fatalError("Mocked saveItemThrowsItem: (@Sendable (_ item: ItemType) throws -> Bool)? was not implemented!")
+                    }
+
+                    return try saveItemOverrideThrowsItem(
+                        item
+                    )
+                }
+
+                func processAllItems() async -> Void {
+                    guard let processAllItemsOverrideAsync else {
+                        fatalError("Mocked processAllItemsAsync: (@Sendable () async -> Void)? was not implemented!")
+                    }
+
+                    return await processAllItemsOverrideAsync()
+                }
+
+                func reset() -> Void {
+                    guard let resetOverride else {
+                        fatalError("Mocked reset: (@Sendable () -> Void)? was not implemented!")
+                    }
+
+                    return resetOverride()
+                }
+
+                func optionalItem() -> ItemType? {
+                    guard let optionalItemOverride else {
+                        fatalError("Mocked optionalItem: (@Sendable () -> ItemType?)? was not implemented!")
+                    }
+
+                    return optionalItemOverride()
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
+    #else
+    func testSkippedDueToMissingMacros() throws {
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+    }
+    #endif
 }

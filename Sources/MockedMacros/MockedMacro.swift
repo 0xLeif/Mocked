@@ -86,16 +86,19 @@ public struct MockedMacro: PeerMacro {
             guard let binding = variable.bindings.first else {
                 return nil
             }
-
-            guard let type = binding.typeAnnotation?.type else {
+            guard
+                let typeAnnotation = binding.typeAnnotation?.type
+            else {
                 fatalError("\(String(describing: binding.initializer?.syntaxNodeType))")
             }
 
             let name = binding.pattern
+            let type = typeAnnotation.description.trimmingCharacters(in: .whitespacesAndNewlines)
 
             return Variable(
-                name: "\(name)",
-                type: "\(type)"
+                firstName: "\(name)",
+                secondName: nil,
+                type: type
             )
         }
     }
@@ -147,12 +150,14 @@ public struct MockedMacro: PeerMacro {
             let canThrow = function.signature.effectSpecifiers?.throwsClause?.throwsSpecifier != nil
 
             for parameter in function.signature.parameterClause.parameters {
-                let parameterName = parameter.firstName.text
+                let parameterFirstName = parameter.firstName.text
+                let parameterSecondName = parameter.secondName?.text
                 let parameterType = parameter.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
 
                 parameters.append(
                     Variable(
-                        name: parameterName,
+                        firstName: parameterFirstName,
+                        secondName: parameterSecondName,
                         type: parameterType
                     )
                 )
@@ -199,11 +204,11 @@ public struct MockedMacro: PeerMacro {
         functions.map { function in
             let parameters: String = function.parameters
                 .map { function in
-                    "\(function.name): \(function.type)"
+                    "\(function.parameterName): \(function.type)"
                 }
                 .joined(separator: ", ")
             let parameterUsage: String = function.parameters
-                .map(\.name)
+                .map(\.usageName)
                 .joined(separator: ", ")
 
 
