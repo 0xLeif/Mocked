@@ -52,13 +52,18 @@ public struct MockedMacro: PeerMacro {
         let objectType: String = requiresClassConformance ? "class" : "struct"
         
         // Check for associated types in the protocol
-        var associatedTypes: [String: String?] = [:]
+        var associatedTypes: [String] = []
         
         for member in protocolDecl.memberBlock.members {
             if let associatedTypeDecl = member.decl.as(AssociatedTypeDeclSyntax.self) {
                 let name = associatedTypeDecl.name.text
                 let constraint = associatedTypeDecl.inheritanceClause?.description.trimmingCharacters(in: .whitespacesAndNewlines)
-                associatedTypes[name] = constraint
+
+                if let constraint {
+                    associatedTypes.append("\(name)\(constraint)")
+                } else {
+                    associatedTypes.append(name)
+                }
             }
         }
 
@@ -66,15 +71,7 @@ public struct MockedMacro: PeerMacro {
         let genericValues = if associatedTypes.isEmpty {
             ""
         } else {
-            "<" + associatedTypes
-                .sorted(by: { $0.key < $1.key })
-                .map { key, value in
-                if let value = value, !value.isEmpty {
-                    return "\(key)\(value)"
-                } else {
-                    return key
-                }
-            }.joined(separator: ", ") + ">"
+            "<" + associatedTypes.joined(separator: ", ") + ">"
         }
 
         return [

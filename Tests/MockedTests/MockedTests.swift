@@ -205,7 +205,7 @@ final class MockedMacroTests: XCTestCase {
             }
             
             /// Mocked version of ExampleProtocol
-            struct MockedExampleProtocol<ItemKey: Hashable, ItemType, ItemValue: Codable>: ExampleProtocol {
+            struct MockedExampleProtocol<ItemType, ItemValue: Codable, ItemKey: Hashable>: ExampleProtocol {
                 // MARK: - MockedExampleProtocol Variables
             
                 var name: String
