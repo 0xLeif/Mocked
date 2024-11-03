@@ -2,10 +2,11 @@
 
 [![macOS Build](https://img.shields.io/github/actions/workflow/status/0xLeif/Mocked/macOS.yml?label=macOS&branch=main)](https://github.com/0xLeif/Mocked/actions/workflows/macOS.yml)
 [![Ubuntu Build](https://img.shields.io/github/actions/workflow/status/0xLeif/Mocked/ubuntu.yml?label=Ubuntu&branch=main)](https://github.com/0xLeif/Mocked/actions/workflows/ubuntu.yml)
+[![Windows Build](https://img.shields.io/github/actions/workflow/status/0xLeif/Mocked/windows.yml?label=Windows&branch=main)](https://github.com/0xLeif/Mocked/actions/workflows/windows.yml)
 [![License](https://img.shields.io/github/license/0xLeif/Mocked)](https://github.com/0xLeif/Mocked/blob/main/LICENSE)
 [![Version](https://img.shields.io/github/v/release/0xLeif/Mocked)](https://github.com/0xLeif/Mocked/releases)
 
-Mocked is a Swift compiler macro that automatically generates mock implementations for protocols. This can be especially useful for unit testing, allowing you to easily create mock objects to verify behavior and interactions in your tests.
+Mocked is a Swift 6 compiler macro that automatically generates mock implementations for protocols. This can be especially useful for unit testing, allowing you to easily create mock objects to verify behavior and interactions in your tests.
 
 ## Features
 
