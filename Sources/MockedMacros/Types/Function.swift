@@ -57,6 +57,10 @@ struct Function {
             ""
         }
 
-        return "\(name)\(effectSignature)\(parameters.map { $0.name.capitalized }.joined(separator: ""))"
+        let parameters = parameters
+            .map(\.name.capitalized)
+            .joined(separator: "")
+
+        return "\(name)\(effectSignature)\(parameters)"
     }
 }

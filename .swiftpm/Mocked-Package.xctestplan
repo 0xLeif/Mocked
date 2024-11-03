@@ -1,0 +1,28 @@
+{
+  "configurations" : [
+    {
+      "id" : "91F0DFA2-D6FB-41BA-A223-074C131E1F54",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:",
+      "identifier" : "MockedClient",
+      "name" : "MockedClient"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "MockedTests",
+        "name" : "MockedTests"
+      }
+    }
+  ],
+  "version" : 1
+}
