@@ -58,6 +58,33 @@ let mock = MockedMyProtocol(
 mock.performAction()  // Output: "Action performed"
 ```
 
+### Default Implementations
+
+If a protocol has a default implementation provided in an extension, the generated mock will use this default implementation unless an override is specified.
+
+```swift
+protocol DefaultProtocol {
+    func defaultMethod() -> String
+}
+
+extension DefaultProtocol {
+    func defaultMethod() -> String {
+        return "default"
+    }
+}
+
+@Mocked
+protocol CustomProtocol: DefaultProtocol {
+    func customMethod() -> Bool
+}
+
+let mock = MockedCustomProtocol(
+    customMethod: { true }
+)
+
+print(mock.defaultMethod())  // Output: "default"
+```
+
 ### Edge Cases and Warnings
 
 - **Non-Protocol Usage**: The `@Mocked` macro can only be applied to protocols. Using it on other types will result in a compilation error.
