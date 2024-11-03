@@ -171,6 +171,8 @@ final class MockedMacroTests: XCTestCase {
             @Mocked
             protocol ExampleProtocol: Sendable {
                 associatedtype ItemType
+                associatedtype ItemValue: Codable
+                associatedtype ItemKey: Hashable
             
                 var name: String { get set }
                 var count: Int { get }
@@ -187,6 +189,8 @@ final class MockedMacroTests: XCTestCase {
             expandedSource: """
             protocol ExampleProtocol: Sendable {
                 associatedtype ItemType
+                associatedtype ItemValue: Codable
+                associatedtype ItemKey: Hashable
             
                 var name: String { get set }
                 var count: Int { get }
@@ -201,7 +205,7 @@ final class MockedMacroTests: XCTestCase {
             }
             
             /// Mocked version of ExampleProtocol
-            struct MockedExampleProtocol: ExampleProtocol {
+            struct MockedExampleProtocol<ItemType, ItemValue: Codable, ItemKey: Hashable>: ExampleProtocol {
                 // MARK: - MockedExampleProtocol Variables
             
                 var name: String
@@ -308,7 +312,7 @@ final class MockedMacroTests: XCTestCase {
                 }
                 
                 @Mocked
-                protocol CustomProtocol: DefaultProtocol {
+                protocol CustomProtocol: DefaultProtocol, AnyObject {
                     func customMethod() -> Bool
                 }
                 """,
@@ -322,12 +326,12 @@ final class MockedMacroTests: XCTestCase {
                         return "default"
                     }
                 }
-                protocol CustomProtocol: DefaultProtocol {
+                protocol CustomProtocol: DefaultProtocol, AnyObject {
                     func customMethod() -> Bool
                 }
                 
                 /// Mocked version of CustomProtocol
-                struct MockedCustomProtocol: CustomProtocol {
+                class MockedCustomProtocol: CustomProtocol {
                     // MARK: - MockedCustomProtocol Variables
                 
                 

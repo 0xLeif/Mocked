@@ -91,6 +91,39 @@ let mock = MockedCustomProtocol(
 print(mock.defaultMethod())  // Output: "default"
 ```
 
+### Advanced Usage
+
+The `Mocked` macro can be used with more complex protocols, including those with associated types, `async` methods, `throws` methods, or a combination of both.
+
+```swift
+@Mocked
+protocol ComplexProtocol {
+    associatedtype ItemType
+    associatedtype ItemValue: Codable
+    func fetchData() async throws -> ItemType
+    func processData(input: Int) -> Bool
+    func storeValue(value: ItemValue) -> Void
+}
+
+let mock = MockedComplexProtocol<String, Int>(
+    fetchData: { return "Mocked Data" },
+    processData: { input in return input > 0 }
+)
+
+// Usage in a test
+Task {
+    do {
+        let data = try await mock.fetchData()
+        print(data)  // Output: "Mocked Data"
+    } catch {
+        XCTFail("Unexpected error: \(error)")
+    }
+}
+
+let isValid = mock.processData(input: 5)
+XCTAssertTrue(isValid)
+```
+
 ### Edge Cases and Warnings
 
 - **Non-Protocol Usage**: The `@Mocked` macro can only be applied to protocols. Using it on other types will result in a compilation error.
