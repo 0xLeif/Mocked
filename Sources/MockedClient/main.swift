@@ -1,37 +1,20 @@
 import Mocked
 
-protocol ThisBreaksShit {
-    var broken: String { get }
-}
-
 @Mocked
-protocol SomeParameter: Sendable {
-    var title: String { get set }
-    var description: String { get }
+protocol ExampleProtocol: Sendable {
+    associatedtype ItemType: Codable
+    associatedtype ItemValue: Equatable
 
-    func someMethod()
-    func someMethod(parameter: Int)
-    func someMethod(with parameter: Int)
+    var name: String { get set }
+    var count: Int { get }
+    var isEnabled: Bool { get set }
 
-    func someOtherMethod() throws -> String
-    func someOtherMethod() async throws -> String
+    func fetchItem(withID id: Int) async throws -> ItemType
+    func saveItem(_ item: ItemType) throws -> Bool
 
-    func someAsyncMethod() async -> String
-
-    func someOptionalMethod() -> String?
+    func processAllItems() async
+    func reset()
+    func optionalItem() -> ItemType?
 }
 
-Task { @MainActor in
-    let mockedParameter = MockedSomeParameter(
-        title: "Hello",
-        description: "Descrip",
-        someMethodParameter: { print("\($0)") },
-        someOtherMethodAsyncThrows: { "?" }
-    )
-
-    mockedParameter.someMethod(parameter: 3)
-    let value = try await mockedParameter.someOtherMethod()
-
-    print(value)
-
-}
+let mock = MockedExampleProtocol<String, String>(name: "Leif", count: 0, isEnabled: true)
