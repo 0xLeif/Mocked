@@ -19,9 +19,7 @@ let GUISwiftSettings: [SwiftSetting] = [
 ]
 let GUILinkerSettings: [LinkerSetting] = [
 ]
-#endif
 
-#if os(Windows)
 let macroTarget: Target = Target.macro(
     name: "MockedMacros",
     dependencies: [
