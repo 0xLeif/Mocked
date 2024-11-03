@@ -43,11 +43,44 @@ public struct MockedMacro: PeerMacro {
         let functionVariableInitDefinitions: String = functionVariableInitDefinitions(functions: functions)
         let functionVariableInitAssignments: String = functionVariableInitAssignments(functions: functions)
         let functionImplementations: String = functionImplementations(functions: functions)
+        
+        // Check if the protocol conforms to AnyObject
+        let requiresClassConformance = protocolDecl.inheritanceClause?.inheritedTypes.contains(where: {
+            $0.type.description.trimmingCharacters(in: .whitespacesAndNewlines) == "AnyObject"
+        }) ?? false
+        
+        let objectType: String = requiresClassConformance ? "class" : "struct"
+        
+        // Check for associated types in the protocol
+        var associatedTypes: [String: String?] = [:]
+        
+        for member in protocolDecl.memberBlock.members {
+            if let associatedTypeDecl = member.decl.as(AssociatedTypeDeclSyntax.self) {
+                let name = associatedTypeDecl.name.text
+                let constraint = associatedTypeDecl.inheritanceClause?.description.trimmingCharacters(in: .whitespacesAndNewlines)
+                associatedTypes[name] = constraint
+            }
+        }
+
+        // Construct generic type parameters if there are associated types
+        let genericValues = if associatedTypes.isEmpty {
+            ""
+        } else {
+            "<" + associatedTypes
+                .sorted(by: { $0.key < $1.key })
+                .map { key, value in
+                if let value = value, !value.isEmpty {
+                    return "\(key)\(value)"
+                } else {
+                    return key
+                }
+            }.joined(separator: ", ") + ">"
+        }
 
         return [
             """
             /// Mocked version of \(raw: protocolDecl.name.text)
-            struct \(raw: mockClassName): \(raw: protocolDecl.name.text) {
+            \(raw: objectType) \(raw: mockClassName)\(raw: genericValues): \(raw: protocolDecl.name.text) {
                 // MARK: - \(raw: mockClassName) Variables
             
                 \(raw: variablesDefinitions)
