@@ -4,6 +4,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
+
 /// The `MockedMacro` is a peer macro that generates a mocked implementation of a given protocol.
 ///
 /// This macro can only be applied to protocols, and it creates a struct with mock implementations
@@ -18,6 +19,32 @@ public struct MockedMacro: PeerMacro {
         guard let protocolDecl = declaration.as(ProtocolDeclSyntax.self) else {
             fatalError("MockedMacro can only be applied to protocols")
         }
+        
+        // Check for access level argument (e.g., @Mocked(.public))
+        var accessLevel: String = "internal"
+        
+        if case let .argumentList(argumentList) = node.arguments {
+            // Process each argument in the list
+            for argument in argumentList {
+                let preferredAccessLevel = "\(argument.expression)"
+
+                if preferredAccessLevel.contains("public") {
+                    accessLevel = "public"
+                } else if preferredAccessLevel.contains("fileprivate") {
+                    accessLevel = "fileprivate"
+                } else if preferredAccessLevel.contains("private") {
+                    accessLevel = "private"
+                } else if preferredAccessLevel.contains("open") {
+                    accessLevel = "open"
+                } else if preferredAccessLevel.contains("package") {
+                    accessLevel = "package"
+                } else if preferredAccessLevel.contains("internal") {
+                    accessLevel = "internal"
+                } else {
+                    fatalError("Bad access type: '\(preferredAccessLevel)'")
+                }
+            }
+        }
 
         let mockClassName = "Mocked\(protocolDecl.name.text)"
 
@@ -27,7 +54,7 @@ public struct MockedMacro: PeerMacro {
 
         let variables: [Variable] = variableBuilder(members: members)
 
-        let variablesDefinitions: String = variableDefinitions(variables: variables)
+        let variablesDefinitions: String = variableDefinitions(variables: variables, accessLevel: accessLevel)
         let variablesInitDefinitions: String = variablesInitDefinitions(variables: variables)
         let variablesInitAssignments: String = variablesInitAssignments(variables: variables)
 
@@ -42,7 +69,7 @@ public struct MockedMacro: PeerMacro {
         let functionVariableDefinitions: String = functionVariableDefinitions(functions: functions)
         let functionVariableInitDefinitions: String = functionVariableInitDefinitions(functions: functions)
         let functionVariableInitAssignments: String = functionVariableInitAssignments(functions: functions)
-        let functionImplementations: String = functionImplementations(functions: functions)
+        let functionImplementations: String = functionImplementations(functions: functions, accessLevel: accessLevel)
         
         // Check if the protocol conforms to AnyObject
         let requiresClassConformance = protocolDecl.inheritanceClause?.inheritedTypes.contains(where: {
@@ -77,7 +104,7 @@ public struct MockedMacro: PeerMacro {
         return [
             """
             /// Mocked version of \(raw: protocolDecl.name.text)
-            \(raw: objectType) \(raw: mockClassName)\(raw: genericValues): \(raw: protocolDecl.name.text) {
+            \(raw: accessLevel) \(raw: objectType) \(raw: mockClassName)\(raw: genericValues): \(raw: protocolDecl.name.text) {
                 // MARK: - \(raw: mockClassName) Variables
             
                 \(raw: variablesDefinitions)
@@ -134,10 +161,19 @@ public struct MockedMacro: PeerMacro {
     }
 
     private static func variableDefinitions(
-        variables: [Variable]
+        variables: [Variable],
+        accessLevel: String
     ) -> String {
         variables
-            .map { "var \($0.declaration)" }
+            .map { variable in
+                if accessLevel.contains("public") {
+                    "public var \(variable.declaration)"
+                } else if accessLevel.contains("package") {
+                    "package var \(variable.declaration)"
+                } else {
+                    "var \(variable.declaration)"
+                }
+            }
             .joined(separator: "\n")
     }
 
@@ -229,7 +265,8 @@ public struct MockedMacro: PeerMacro {
     }
 
     private static func functionImplementations(
-        functions: [Function]
+        functions: [Function],
+        accessLevel: String
     ) -> String {
         functions.map { function in
             let parameters: String = function.parameters
@@ -261,10 +298,19 @@ public struct MockedMacro: PeerMacro {
             } else {
                 ""
             }
+            
+            let accessLevel: String = if accessLevel.contains("public") {
+                "public"
+            } else if accessLevel.contains("package") {
+                "package"
+            } else {
+                "internal"
+            }
+            
 
             if parameters.isEmpty {
                 return """
-                    func \(function.name)() \(effectSignature)-> \(function.returnType ?? "Void") {
+                    \(accessLevel) func \(function.name)() \(effectSignature)-> \(function.returnType ?? "Void") {
                         guard let \(function.overrideName) else {
                             fatalError("Mocked \(function.closure) was not implemented!")
                         }

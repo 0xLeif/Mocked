@@ -105,7 +105,16 @@ XCTAssertTrue(isValid)
 - **Use Closures Thoughtfully**: Provide closures that simulate realistic behavior to make your tests more meaningful. For example, simulate network delays with `async` closures or return specific error types to test error handling paths.
 */
 @attached(peer, names: prefixed(Mocked))
-public macro Mocked() = #externalMacro(
+public macro Mocked(_ accessLevel: AccessLevel = .internal) = #externalMacro(
     module: "MockedMacros",
     type: "MockedMacro"
 )
+
+public enum AccessLevel: String {
+    case `open`
+    case `public`
+    case `package`
+    case `internal`
+    case `private`
+    case `fileprivate`
+}

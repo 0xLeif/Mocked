@@ -53,7 +53,7 @@ final class MockedMacroTests: XCTestCase {
             }
             
             /// Mocked version of SomeParameter
-            struct MockedSomeParameter: SomeParameter {
+            internal struct MockedSomeParameter: SomeParameter {
                 // MARK: - MockedSomeParameter Variables
             
                 var title: String
@@ -168,7 +168,7 @@ final class MockedMacroTests: XCTestCase {
     func testComplexProtocolMocking() throws {
         assertMacroExpansion(
             """
-            @Mocked
+            @Mocked(.public)
             protocol ExampleProtocol: Sendable {
                 associatedtype ItemType
                 associatedtype ItemValue: Codable
@@ -205,7 +205,7 @@ final class MockedMacroTests: XCTestCase {
             }
             
             /// Mocked version of ExampleProtocol
-            struct MockedExampleProtocol<ItemType, ItemValue: Codable, ItemKey: Hashable>: ExampleProtocol {
+            public struct MockedExampleProtocol<ItemType, ItemValue: Codable, ItemKey: Hashable>: ExampleProtocol {
                 // MARK: - MockedExampleProtocol Variables
             
                 var name: String
@@ -311,7 +311,7 @@ final class MockedMacroTests: XCTestCase {
                     }
                 }
                 
-                @Mocked
+                @Mocked(.open)
                 protocol CustomProtocol: DefaultProtocol, AnyObject {
                     func customMethod() -> Bool
                 }
@@ -331,7 +331,7 @@ final class MockedMacroTests: XCTestCase {
                 }
                 
                 /// Mocked version of CustomProtocol
-                class MockedCustomProtocol: CustomProtocol {
+                open class MockedCustomProtocol: CustomProtocol {
                     // MARK: - MockedCustomProtocol Variables
                 
                 
@@ -363,6 +363,135 @@ final class MockedMacroTests: XCTestCase {
                 }
                 """,
                 macros: testMacros
+        )
+    }
+    
+    func testPackageProtocolMocking() throws {
+        assertMacroExpansion(
+            """
+            @Mocked(.package)
+            protocol SomeParameter: Sendable {
+
+            }
+            """,
+            expandedSource: """
+            protocol SomeParameter: Sendable {
+
+            }
+            
+            /// Mocked version of SomeParameter
+            package struct MockedSomeParameter: SomeParameter {
+                // MARK: - MockedSomeParameter Variables
+
+
+
+                // MARK: - MockedSomeParameter Function Overrides
+
+
+
+                // MARK: - MockedSomeParameter init
+
+                init(
+
+
+                ) {
+
+
+                }
+
+
+                // MARK: - MockedSomeParameter Functions
+
+
+            }
+            """,
+            macros: testMacros
+        )
+    }
+    
+    func testPrivateProtocolMocking() throws {
+        assertMacroExpansion(
+            """
+            @Mocked(.private)
+            protocol SomeParameter: Sendable {
+
+            }
+            """,
+            expandedSource: """
+            protocol SomeParameter: Sendable {
+
+            }
+            
+            /// Mocked version of SomeParameter
+            private struct MockedSomeParameter: SomeParameter {
+                // MARK: - MockedSomeParameter Variables
+
+
+
+                // MARK: - MockedSomeParameter Function Overrides
+
+
+
+                // MARK: - MockedSomeParameter init
+
+                init(
+
+
+                ) {
+
+
+                }
+
+
+                // MARK: - MockedSomeParameter Functions
+
+
+            }
+            """,
+            macros: testMacros
+        )
+    }
+    
+    func testFileprivateProtocolMocking() throws {
+        assertMacroExpansion(
+            """
+            @Mocked(.fileprivate)
+            protocol SomeParameter: Sendable {
+
+            }
+            """,
+            expandedSource: """
+            protocol SomeParameter: Sendable {
+
+            }
+            
+            /// Mocked version of SomeParameter
+            fileprivate struct MockedSomeParameter: SomeParameter {
+                // MARK: - MockedSomeParameter Variables
+
+
+
+                // MARK: - MockedSomeParameter Function Overrides
+
+
+
+                // MARK: - MockedSomeParameter init
+
+                init(
+
+
+                ) {
+
+
+                }
+
+
+                // MARK: - MockedSomeParameter Functions
+
+
+            }
+            """,
+            macros: testMacros
         )
     }
 #else
