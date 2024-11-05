@@ -1,7 +1,7 @@
 import Mocked
 
-@Mocked(.package)
-public protocol ExampleProtocol: Sendable {
+@Mocked(.fileprivate)
+protocol ExampleProtocol: Sendable {
     associatedtype ItemType: Codable
     associatedtype ItemValue: Equatable
 
