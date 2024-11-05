@@ -17,7 +17,15 @@ public struct MockedMacro: PeerMacro {
     ) throws -> [DeclSyntax] {
         // Ensure the macro is applied to a protocol
         guard let protocolDecl = declaration.as(ProtocolDeclSyntax.self) else {
-            fatalError("MockedMacro can only be applied to protocols")
+            context.diagnose(
+                .init(
+                    node: node,
+                    message: MacroExpansionErrorMessage(
+                        "MockedMacro can only be applied to protocols"
+                    )
+                )
+            )
+            return []
         }
         
         // Check for access level argument (e.g., @Mocked(.public))
@@ -41,7 +49,15 @@ public struct MockedMacro: PeerMacro {
                 } else if preferredAccessLevel.contains("internal") {
                     accessLevel = "internal"
                 } else {
-                    fatalError("Bad access type: '\(preferredAccessLevel)'")
+                    context.diagnose(
+                        .init(
+                            node: node,
+                            message: MacroExpansionErrorMessage(
+                                "Invalid access level for @Mocked: \(preferredAccessLevel)"
+                            )
+                        )
+                    )
+                    return []
                 }
             }
         }
