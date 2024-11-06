@@ -12,7 +12,10 @@ Mocked is a Swift 6 compiler macro that automatically generates mock implementat
 
 - **Automatic Mock Generation**: Simply annotate your protocol with `@Mocked`, and a mock implementation will be generated.
 - **Supports Properties and Methods**: Generates mock versions of properties and methods, including `async` and `throws` variants.
+- **Access Level Control**: You can specify the access level (`open`, `public`, `package`, `internal`, `fileprivate`, `private`) for the generated mock.
 - **Configurable Behavior**: Easily override behavior by providing closures during initialization of the mock.
+- **Support for Associated Types**: The `Mocked` macro handles protocols with associated types using generics.
+- **Automatic Detection of Class Requirements**: If the protocol conforms to `AnyObject`, a class is generated instead of a struct, maintaining reference semantics.
 
 ## Installation
 
