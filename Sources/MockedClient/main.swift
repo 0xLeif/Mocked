@@ -1,6 +1,6 @@
 import Mocked
 
-@Mocked
+@Mocked(.fileprivate)
 protocol ExampleProtocol: Sendable {
     associatedtype ItemType: Codable
     associatedtype ItemValue: Equatable
@@ -16,5 +16,3 @@ protocol ExampleProtocol: Sendable {
     func reset()
     func optionalItem() -> ItemType?
 }
-
-let mock = MockedExampleProtocol<String, String>(name: "Leif", count: 0, isEnabled: true)
