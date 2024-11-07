@@ -27,15 +27,15 @@ public struct MockedMacro: PeerMacro {
             )
             return []
         }
-        
+
         // Check for access level argument (e.g., @Mocked(.public))
         var accessLevel: String = "internal"
-        
+
         if case let .argumentList(argumentList) = node.arguments {
             // Process each argument in the list
             for argument in argumentList {
                 let preferredAccessLevel = "\(argument.expression)"
-                
+
                 if preferredAccessLevel.contains("public") {
                     accessLevel = "public"
                 } else if preferredAccessLevel.contains("fileprivate") {
@@ -61,53 +61,53 @@ public struct MockedMacro: PeerMacro {
                 }
             }
         }
-        
+
         let initAccessLevel = switch accessLevel {
         case "public":  "public"
         case "open":    "open"
         case "package": "package"
         default:        "internal"
         }
-        
+
         let mockClassName = "Mocked\(protocolDecl.name.text)"
-        
+
         let members = protocolDecl.memberBlock.members
-        
+
         // Variables
-        
+
         let variables: [Variable] = variableBuilder(members: members)
-        
+
         let variablesDefinitions: String = variableDefinitions(variables: variables, accessLevel: accessLevel)
         let variablesInitDefinitions: String = variablesInitDefinitions(variables: variables)
         let variablesInitAssignments: String = variablesInitAssignments(variables: variables)
-        
+
         // Functions
-        
+
         let functions: [Function] = functionBuilder(
             protocolDecl: protocolDecl,
             members: members
         )
-        
+
         let functionVariableDefinitions: String = functionVariableDefinitions(functions: functions)
         let functionVariableInitDefinitions: String = functionVariableInitDefinitions(functions: functions)
         let functionVariableInitAssignments: String = functionVariableInitAssignments(functions: functions)
         let functionImplementations: String = functionImplementations(functions: functions, accessLevel: accessLevel)
-        
+
         // Check if the protocol conforms to AnyObject
         let requiresClassConformance = protocolDecl.inheritanceClause?.inheritedTypes.contains(where: {
             $0.type.description.trimmingCharacters(in: .whitespacesAndNewlines) == "AnyObject"
         }) ?? false
-        
+
         let objectType: String = requiresClassConformance ? "class" : "struct"
-        
+
         // Check for associated types in the protocol
         var associatedTypes: [String] = []
-        
+
         for member in protocolDecl.memberBlock.members {
             if let associatedTypeDecl = member.decl.as(AssociatedTypeDeclSyntax.self) {
                 let name = associatedTypeDecl.name.text
                 let constraint = associatedTypeDecl.inheritanceClause?.description.trimmingCharacters(in: .whitespacesAndNewlines)
-                
+
                 if let constraint {
                     associatedTypes.append("\(name)\(constraint)")
                 } else {
@@ -115,14 +115,14 @@ public struct MockedMacro: PeerMacro {
                 }
             }
         }
-        
+
         // Construct generic type parameters if there are associated types
         let genericValues = if associatedTypes.isEmpty {
             ""
         } else {
             "<" + associatedTypes.joined(separator: ", ") + ">"
         }
-        
+
         return [
             """
             /// Mocked version of \(raw: protocolDecl.name.text)
@@ -144,6 +144,7 @@ public struct MockedMacro: PeerMacro {
                     \(raw: variablesInitAssignments)
                     \(raw: functionVariableInitAssignments)
                 }
+
                 // MARK: - \(raw: mockClassName) Functions
             
                 \(raw: functionImplementations)
@@ -151,15 +152,15 @@ public struct MockedMacro: PeerMacro {
             """
         ]
     }
-    
+
     // MARK: - Variable helpers
-    
+
     private static func variableBuilder(members:  MemberBlockItemListSyntax) -> [Variable] {
         members.compactMap { member in
             guard
                 let variable = member.decl.as(VariableDeclSyntax.self)
             else { return nil }
-            
+
             guard let binding = variable.bindings.first else {
                 return nil
             }
@@ -168,10 +169,10 @@ public struct MockedMacro: PeerMacro {
             else {
                 fatalError("\(String(describing: binding.initializer?.syntaxNodeType))")
             }
-            
+
             let name = binding.pattern
             let type = typeAnnotation.description.trimmingCharacters(in: .whitespacesAndNewlines)
-            
+
             return Variable(
                 firstName: "\(name)",
                 secondName: nil,
@@ -179,7 +180,7 @@ public struct MockedMacro: PeerMacro {
             )
         }
     }
-    
+
     private static func variableDefinitions(
         variables: [Variable],
         accessLevel: String
@@ -196,7 +197,7 @@ public struct MockedMacro: PeerMacro {
             }
             .joined(separator: "\n")
     }
-    
+
     private static func variablesInitDefinitions(
         variables: [Variable]
     ) -> String {
@@ -204,7 +205,7 @@ public struct MockedMacro: PeerMacro {
             .map { "\($0.declaration)," }
             .joined(separator: "\n")
     }
-    
+
     private static func variablesInitAssignments(
         variables: [Variable]
     ) -> String {
@@ -212,9 +213,9 @@ public struct MockedMacro: PeerMacro {
             .map { "self.\($0.name) = \($0.name)" }
             .joined(separator: "\n")
     }
-    
+
     // MARK: - Function helpers
-    
+
     private static func functionBuilder(
         protocolDecl: ProtocolDeclSyntax,
         members:  MemberBlockItemListSyntax
@@ -222,24 +223,24 @@ public struct MockedMacro: PeerMacro {
         let inheritsSendable = protocolDecl.inheritanceClause?.inheritedTypes.contains { inheritedType in
             inheritedType.type.description.trimmingCharacters(in: .whitespacesAndNewlines) == "Sendable"
         } ?? false
-        
+
         return members.compactMap { member in
             guard
                 let function = member.decl.as(FunctionDeclSyntax.self)
             else { return nil }
-            
+
             let name = function.name.text
             var parameters: [Variable] = []
             let returnType = function.signature.returnClause?.type ?? "Void"
-            
+
             let isAsync = function.signature.effectSpecifiers?.asyncSpecifier != nil
             let canThrow = function.signature.effectSpecifiers?.throwsClause?.throwsSpecifier != nil
-            
+
             for parameter in function.signature.parameterClause.parameters {
                 let parameterFirstName = parameter.firstName.text
                 let parameterSecondName = parameter.secondName?.text
                 let parameterType = parameter.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
-                
+
                 parameters.append(
                     Variable(
                         firstName: parameterFirstName,
@@ -248,7 +249,7 @@ public struct MockedMacro: PeerMacro {
                     )
                 )
             }
-            
+
             return Function(
                 name: "\(name)",
                 parameters: parameters,
@@ -259,7 +260,7 @@ public struct MockedMacro: PeerMacro {
             )
         }
     }
-    
+
     private static func functionVariableDefinitions(
         functions: [Function]
     ) -> String {
@@ -267,7 +268,7 @@ public struct MockedMacro: PeerMacro {
             .map { "private let \($0.overrideClosure)" }
             .joined(separator: "\n")
     }
-    
+
     private static func functionVariableInitDefinitions(
         functions: [Function]
     ) -> String {
@@ -275,7 +276,7 @@ public struct MockedMacro: PeerMacro {
             .map { "\($0.closure) = nil" }
             .joined(separator: ",\n")
     }
-    
+
     private static func functionVariableInitAssignments(
         functions: [Function]
     ) -> String {
@@ -283,7 +284,7 @@ public struct MockedMacro: PeerMacro {
             .map { "self.\($0.overrideName) = \($0.uniqueName)" }
             .joined(separator: "\n")
     }
-    
+
     private static func functionImplementations(
         functions: [Function],
         accessLevel: String
@@ -297,7 +298,7 @@ public struct MockedMacro: PeerMacro {
             let parameterUsage: String = function.parameters
                 .map(\.usageName)
                 .joined(separator: ", ")
-            
+
             let effectSignature: String = if function.canThrow && function.isAsync {
                 "async throws "
             } else if function.canThrow {
@@ -307,7 +308,7 @@ public struct MockedMacro: PeerMacro {
             } else {
                 ""
             }
-            
+
             let callSignature: String = if function.canThrow && function.isAsync {
                 "try await "
             } else if function.canThrow {
@@ -317,7 +318,7 @@ public struct MockedMacro: PeerMacro {
             } else {
                 ""
             }
-            
+
             let accessLevel: String = if accessLevel.contains("public") {
                 "public"
             } else if accessLevel.contains("package") {
@@ -325,7 +326,7 @@ public struct MockedMacro: PeerMacro {
             } else {
                 "internal"
             }
-            
+
             if parameters.isEmpty {
                 return """
                     \(accessLevel) func \(function.name)() \(effectSignature)-> \(function.returnType ?? "Void") {

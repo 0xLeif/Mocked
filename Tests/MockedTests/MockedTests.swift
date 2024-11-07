@@ -93,7 +93,6 @@ final class MockedMacroTests: XCTestCase {
                     self.someOptionalMethodOverride = someOptionalMethod
                 }
             
-            
                 // MARK: - MockedSomeParameter Functions
             
                 internal func someMethod() -> Void {
@@ -242,7 +241,6 @@ final class MockedMacroTests: XCTestCase {
                     self.optionalItemOverride = optionalItem
                 }
             
-            
                 // MARK: - MockedExampleProtocol Functions
             
                 public func fetchItem(
@@ -350,7 +348,6 @@ final class MockedMacroTests: XCTestCase {
                         self.customMethodOverride = customMethod
                     }
                 
-                
                     // MARK: - MockedCustomProtocol Functions
                 
                     internal func customMethod() -> Bool {
@@ -402,7 +399,6 @@ final class MockedMacroTests: XCTestCase {
                     self.name = name
                     self.greetOverride = greet
                 }
-            
             
                 // MARK: - MockedSomeParameter Functions
             
@@ -456,7 +452,6 @@ final class MockedMacroTests: XCTestCase {
                     self.greetOverride = greet
                 }
             
-            
                 // MARK: - MockedSomeParameter Functions
             
                 internal func greet() -> Void {
@@ -508,7 +503,6 @@ final class MockedMacroTests: XCTestCase {
                     self.name = name
                     self.greetOverride = greet
                 }
-            
             
                 // MARK: - MockedSomeParameter Functions
             
