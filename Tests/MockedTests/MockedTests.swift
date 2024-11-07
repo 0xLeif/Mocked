@@ -93,7 +93,6 @@ final class MockedMacroTests: XCTestCase {
                     self.someOptionalMethodOverride = someOptionalMethod
                 }
             
-            
                 // MARK: - MockedSomeParameter Functions
             
                 internal func someMethod() -> Void {
@@ -164,7 +163,7 @@ final class MockedMacroTests: XCTestCase {
             macros: testMacros
         )
     }
-    
+
     func testComplexProtocolMocking() throws {
         assertMacroExpansion(
             """
@@ -242,7 +241,6 @@ final class MockedMacroTests: XCTestCase {
                     self.optionalItemOverride = optionalItem
                 }
             
-            
                 // MARK: - MockedExampleProtocol Functions
             
                 public func fetchItem(
@@ -297,7 +295,7 @@ final class MockedMacroTests: XCTestCase {
             macros: testMacros
         )
     }
-    
+
     func testProtocolWithDefaultImplementation() throws {
         assertMacroExpansion(
                 """
@@ -350,7 +348,6 @@ final class MockedMacroTests: XCTestCase {
                         self.customMethodOverride = customMethod
                     }
                 
-                
                     // MARK: - MockedCustomProtocol Functions
                 
                     internal func customMethod() -> Bool {
@@ -365,7 +362,7 @@ final class MockedMacroTests: XCTestCase {
                 macros: testMacros
         )
     }
-    
+
     func testPackageProtocolMocking() throws {
         assertMacroExpansion(
             """
@@ -386,15 +383,15 @@ final class MockedMacroTests: XCTestCase {
             /// Mocked version of SomeParameter
             package struct MockedSomeParameter: SomeParameter {
                 // MARK: - MockedSomeParameter Variables
-
+            
                 package var name: String
-
+            
                 // MARK: - MockedSomeParameter Function Overrides
-
+            
                 private let greetOverride: (@Sendable () -> Void)?
-
+            
                 // MARK: - MockedSomeParameter init
-
+            
                 package init(
                     name: String,
                     greet: (@Sendable () -> Void)? = nil
@@ -402,15 +399,14 @@ final class MockedMacroTests: XCTestCase {
                     self.name = name
                     self.greetOverride = greet
                 }
-
-
+            
                 // MARK: - MockedSomeParameter Functions
-
+            
                 package func greet() -> Void {
                 guard let greetOverride else {
                     fatalError("Mocked greet: (@Sendable () -> Void)? was not implemented!")
                 }
-
+            
                 return greetOverride()
                 }
             }
@@ -418,7 +414,7 @@ final class MockedMacroTests: XCTestCase {
             macros: testMacros
         )
     }
-    
+
     func testPrivateProtocolMocking() throws {
         assertMacroExpansion(
             """
@@ -439,15 +435,15 @@ final class MockedMacroTests: XCTestCase {
             /// Mocked version of SomeParameter
             private struct MockedSomeParameter: SomeParameter {
                 // MARK: - MockedSomeParameter Variables
-
+            
                 var name: String
-
+            
                 // MARK: - MockedSomeParameter Function Overrides
-
+            
                 private let greetOverride: (@Sendable () -> Void)?
-
+            
                 // MARK: - MockedSomeParameter init
-
+            
                 internal init(
                     name: String,
                     greet: (@Sendable () -> Void)? = nil
@@ -455,15 +451,14 @@ final class MockedMacroTests: XCTestCase {
                     self.name = name
                     self.greetOverride = greet
                 }
-
-
+            
                 // MARK: - MockedSomeParameter Functions
-
+            
                 internal func greet() -> Void {
                 guard let greetOverride else {
                     fatalError("Mocked greet: (@Sendable () -> Void)? was not implemented!")
                 }
-
+            
                 return greetOverride()
                 }
             }
@@ -471,7 +466,7 @@ final class MockedMacroTests: XCTestCase {
             macros: testMacros
         )
     }
-    
+
     func testFileprivateProtocolMocking() throws {
         assertMacroExpansion(
             """
@@ -485,22 +480,22 @@ final class MockedMacroTests: XCTestCase {
             expandedSource: """
             protocol SomeParameter: Sendable {
                 var name: String
-
+            
                 func greet()
             }
-
+            
             /// Mocked version of SomeParameter
             fileprivate struct MockedSomeParameter: SomeParameter {
                 // MARK: - MockedSomeParameter Variables
-
+            
                 var name: String
-
+            
                 // MARK: - MockedSomeParameter Function Overrides
-
+            
                 private let greetOverride: (@Sendable () -> Void)?
-
+            
                 // MARK: - MockedSomeParameter init
-
+            
                 internal init(
                     name: String,
                     greet: (@Sendable () -> Void)? = nil
@@ -508,15 +503,14 @@ final class MockedMacroTests: XCTestCase {
                     self.name = name
                     self.greetOverride = greet
                 }
-
-
+            
                 // MARK: - MockedSomeParameter Functions
-
+            
                 internal func greet() -> Void {
                 guard let greetOverride else {
                     fatalError("Mocked greet: (@Sendable () -> Void)? was not implemented!")
                 }
-
+            
                 return greetOverride()
                 }
             }
