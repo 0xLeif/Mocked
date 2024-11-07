@@ -16,6 +16,7 @@ Mocked is a Swift 6 compiler macro that automatically generates mock implementat
 - **Configurable Behavior**: Easily override behavior by providing closures during initialization of the mock.
 - **Support for Associated Types**: The `Mocked` macro handles protocols with associated types using generics.
 - **Automatic Detection of Class Requirements**: If the protocol conforms to `AnyObject`, a class is generated instead of a struct, maintaining reference semantics.
+- **Automatic Default Property Implementations**: Properties are backed by straightforward storage for easy access and modification.
 
 ## Installation
 
@@ -132,6 +133,12 @@ XCTAssertTrue(isValid)
 - **Non-Protocol Usage**: The `@Mocked` macro can only be applied to protocols. Using it on other types will result in a compilation error.
 - **Unimplemented Methods**: Any method that is not overridden will call `fatalError()` if invoked. Ensure all required methods are implemented when using the generated mock.
 - **Async and Throwing Methods**: The generated mocks handle `async` and `throws` methods appropriately, but be sure to provide closures that match the method signatures.
+
+## Limitations
+
+- **No Function-Level Generics**: Generics are supported only at the protocol level using associated types. Function-level generics are not currently supported. If you need generic capabilities, consider using associated types in the protocol.
+- **Child Protocols Cannot Mock Parent Requirements**: When mocking protocols that inherit from other protocols, the `@Mocked` macro will not automatically generate implementations for the inherited protocol requirements.
+- **No Support for `@` Annotations**: Attributes such as `@MainActor` are not currently supported in mock generation.
 
 ## Contributing
 
