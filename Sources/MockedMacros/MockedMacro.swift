@@ -83,10 +83,7 @@ public struct MockedMacro: PeerMacro {
 
         // Functions
 
-        let functions: [Function] = functionBuilder(
-            protocolDecl: protocolDecl,
-            members: members
-        )
+        let functions: [Function] = functionBuilder(protocolDecl: protocolDecl, members: members)
 
         let functionVariableDefinitions: String = functionVariableDefinitions(functions: functions)
         let functionVariableInitDefinitions: String = functionVariableInitDefinitions(functions: functions)
@@ -94,9 +91,9 @@ public struct MockedMacro: PeerMacro {
         let functionImplementations: String = functionImplementations(functions: functions, accessLevel: accessLevel)
 
         // Check if the protocol conforms to AnyObject
-        let requiresClassConformance = protocolDecl.inheritanceClause?.inheritedTypes.contains(where: {
-            $0.type.description.trimmingCharacters(in: .whitespacesAndNewlines) == "AnyObject"
-        }) ?? false
+        let requiresClassConformance = protocolDecl.inheritanceClause?.inheritedTypes.contains(
+            where: { $0.type.description.trimmingCharacters(in: .whitespacesAndNewlines) == "AnyObject" }
+        ) ?? false
 
         let objectType: String = requiresClassConformance ? "class" : "struct"
 
