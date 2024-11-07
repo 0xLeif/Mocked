@@ -133,6 +133,12 @@ XCTAssertTrue(isValid)
 - **Unimplemented Methods**: Any method that is not overridden will call `fatalError()` if invoked. Ensure all required methods are implemented when using the generated mock.
 - **Async and Throwing Methods**: The generated mocks handle `async` and `throws` methods appropriately, but be sure to provide closures that match the method signatures.
 
+## Limitations
+
+- **No Function-Level Generics**: Generics are supported only at the protocol level using associated types. Function-level generics are not currently supported. If you need generic capabilities, consider using associated types in the protocol.
+- **Child Protocols Cannot Mock Parent Requirements**: When mocking protocols that inherit from other protocols, the `@Mocked` macro will not automatically generate implementations for the inherited protocol requirements.
+- **No Support for `@` Annotations**: Attributes such as `@MainActor` are not currently supported in mock generation.
+
 ## Contributing
 
 Contributions are welcome! If you have suggestions, issues, or improvements, feel free to open a pull request or issue on the [GitHub repository](https://github.com/0xLeif/Mocked).
