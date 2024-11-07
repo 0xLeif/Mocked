@@ -2,7 +2,7 @@ struct Variable {
     let firstName: String
     let secondName: String?
     let type: String
-
+    
     var name: String {
         guard
             let secondName,
@@ -10,18 +10,18 @@ struct Variable {
         else {
             return firstName
         }
-
+        
         return secondName
     }
-
+    
     var parameterName: String {
         guard let secondName else {
             return firstName
         }
-
+        
         return "\(firstName) \(secondName)"
     }
-
+    
     var usageName: String {
         guard let secondName else {
             return firstName
@@ -29,7 +29,7 @@ struct Variable {
         
         return secondName
     }
-
+    
     var declaration: String {
         "\(name): \(type)"
     }
